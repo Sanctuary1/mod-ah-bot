@@ -30,7 +30,7 @@
 #include "AuctionHouseBotCommon.h"
 #include "AuctionHouseSearcher.h"
 
-/* Added these to support changes to the function at line 180*/
+ /* Added these to fix line 1031*/
 #include "AccountMgr.h"
 #include "World.h"
 #include <memory>
@@ -39,16 +39,16 @@ using namespace std;
 
 AuctionHouseBot::AuctionHouseBot(uint32 account, uint32 id)
 {
-    _account        = account;
-    _id             = id;
+    _account = account;
+    _id = id;
 
-    _lastrun_a_sec  = time(NULL);
-    _lastrun_h_sec  = time(NULL);
-    _lastrun_n_sec  = time(NULL);
+    _lastrun_a_sec = time(NULL);
+    _lastrun_h_sec = time(NULL);
+    _lastrun_n_sec = time(NULL);
 
     _allianceConfig = NULL;
-    _hordeConfig    = NULL;
-    _neutralConfig  = NULL;
+    _hordeConfig = NULL;
+    _neutralConfig = NULL;
 }
 
 AuctionHouseBot::~AuctionHouseBot()
@@ -137,13 +137,13 @@ uint32 AuctionHouseBot::getElapsedTime(uint32 timeClass)
     switch (timeClass)
     {
     case 2:
-        return urand(1, 5) * 600;   // SHORT = In the range of one hour
+        return urand(1, 6) * 600;   // SHORT = From 10 to 60 minutes
 
     case 1:
-        return urand(1, 23) * 3600; // MEDIUM = In the range of one day
+        return urand(1, 24) * 3600; // MEDIUM = From 1 to 24 hours
 
     default:
-        return urand(1, 3) * 86400; // LONG = More than one day but less than three
+        return urand(24, 72) * 3600; // LONG = From 1 to 3 days
     }
 }
 
@@ -218,10 +218,10 @@ void AuctionHouseBot::Buy(Player* AHBplayer, AHBConfig* config, WorldSession* se
         attempts < config->GetBidsPerInterval() && !candidateIds.empty();
         ++attempts)
     {
-        // Pick a random index so we don't keep retrying the same (possibly overpriced) auction.
+        // Pick a random index so we donâ€™t keep retrying the same (possibly overpriced) auction.
         size_t idx = urand(0, static_cast<uint32>(candidateIds.size() - 1));
         uint32 auctionID = candidateIds[idx];
-        // Remove it from the list so we won't re-visit it this pass.
+        // Remove it from the list so we wonâ€™t re-visit it this pass.
         candidateIds.erase(candidateIds.begin() + idx);
 
         AuctionEntry* auction = auctionHouseObject->GetAuction(auctionID);
@@ -232,7 +232,7 @@ void AuctionHouseBot::Buy(Player* AHBplayer, AHBConfig* config, WorldSession* se
             continue; // move on
         }
 
-        // Skip other bots’ auctions entirely.
+        // Skip other botsâ€™ auctions entirely.
         if (gBotsId.find(auction->owner.GetCounter()) != gBotsId.end())
             continue;
 
@@ -252,10 +252,9 @@ void AuctionHouseBot::Buy(Player* AHBplayer, AHBConfig* config, WorldSession* se
         // Current price we must beat (or start from)
         uint32 currentPrice = static_cast<uint32>(auction->bid ? auction->bid : auction->startbid);
 
-        // Max we’re willing to pay for this stack
+        // Max weâ€™re willing to pay for this stack
         uint32 basePrice = static_cast<uint32>(
             (config->UseBuyPriceForBuyer && prototype->BuyPrice > 0) ? prototype->BuyPrice : prototype->SellPrice);
-
         uint32 maximumBid = static_cast<uint32>(basePrice * pItem->GetCount() * config->GetBuyerPrice(prototype->Quality));
 
         if (config->TraceBuyer)
@@ -292,14 +291,14 @@ void AuctionHouseBot::Buy(Player* AHBplayer, AHBConfig* config, WorldSession* se
             if (config->TraceBuyer)
                 LOG_INFO("module", "AHBot [{}]: Out of buying range (or class excluded), skipping auction #{}.",
                     _id, auction->Id);
-            continue; // IMPORTANT: move to another auction; don’t stall.
+            continue; // IMPORTANT: move to another auction; donâ€™t stall.
         }
 
         // Decide whether to bid or buyout
         bool canBuyout = (auction->buyout > 0 && auction->buyout <= maximumBid);
         if (!canBuyout && bidTooHigh)
         {
-            // Can't buyout, and the next valid bid is too high — skip.
+            // Can't buyout, and the next valid bid is too high â€” skip.
             if (config->TraceBuyer)
                 LOG_INFO("module", "AHBot [{}]: Next legal bid exceeds cap; skipping #{}.", _id, auction->Id);
             continue;
@@ -361,8 +360,6 @@ void AuctionHouseBot::Buy(Player* AHBplayer, AHBConfig* config, WorldSession* se
         }
     }
 }
-
-
 
 // =============================================================================
 // This routine performs the selling operations for the bot
@@ -456,48 +453,48 @@ void AuctionHouseBot::Sell(Player* AHBplayer, AHBConfig* config)
     // Retrieve the configuration for this run
     // 
 
-    uint32 maxGreyTG   = config->GetMaximum(AHB_GREY_TG);
-    uint32 maxWhiteTG  = config->GetMaximum(AHB_WHITE_TG);
-    uint32 maxGreenTG  = config->GetMaximum(AHB_GREEN_TG);
-    uint32 maxBlueTG   = config->GetMaximum(AHB_BLUE_TG);
+    uint32 maxGreyTG = config->GetMaximum(AHB_GREY_TG);
+    uint32 maxWhiteTG = config->GetMaximum(AHB_WHITE_TG);
+    uint32 maxGreenTG = config->GetMaximum(AHB_GREEN_TG);
+    uint32 maxBlueTG = config->GetMaximum(AHB_BLUE_TG);
     uint32 maxPurpleTG = config->GetMaximum(AHB_PURPLE_TG);
     uint32 maxOrangeTG = config->GetMaximum(AHB_ORANGE_TG);
     uint32 maxYellowTG = config->GetMaximum(AHB_YELLOW_TG);
 
-    uint32 maxGreyI    = config->GetMaximum(AHB_GREY_I);
-    uint32 maxWhiteI   = config->GetMaximum(AHB_WHITE_I);
-    uint32 maxGreenI   = config->GetMaximum(AHB_GREEN_I);
-    uint32 maxBlueI    = config->GetMaximum(AHB_BLUE_I);
-    uint32 maxPurpleI  = config->GetMaximum(AHB_PURPLE_I);
-    uint32 maxOrangeI  = config->GetMaximum(AHB_ORANGE_I);
-    uint32 maxYellowI  = config->GetMaximum(AHB_YELLOW_I);
+    uint32 maxGreyI = config->GetMaximum(AHB_GREY_I);
+    uint32 maxWhiteI = config->GetMaximum(AHB_WHITE_I);
+    uint32 maxGreenI = config->GetMaximum(AHB_GREEN_I);
+    uint32 maxBlueI = config->GetMaximum(AHB_BLUE_I);
+    uint32 maxPurpleI = config->GetMaximum(AHB_PURPLE_I);
+    uint32 maxOrangeI = config->GetMaximum(AHB_ORANGE_I);
+    uint32 maxYellowI = config->GetMaximum(AHB_YELLOW_I);
 
-    uint32 currentGreyTG    = config->GetItemCounts(AHB_GREY_TG);
-    uint32 currentWhiteTG   = config->GetItemCounts(AHB_WHITE_TG);
-    uint32 currentGreenTG   = config->GetItemCounts(AHB_GREEN_TG);
-    uint32 currentBlueTG    = config->GetItemCounts(AHB_BLUE_TG);
-    uint32 currentPurpleTG  = config->GetItemCounts(AHB_PURPLE_TG);
-    uint32 currentOrangeTG  = config->GetItemCounts(AHB_ORANGE_TG);
-    uint32 currentYellowTG  = config->GetItemCounts(AHB_YELLOW_TG);
+    uint32 currentGreyTG = config->GetItemCounts(AHB_GREY_TG);
+    uint32 currentWhiteTG = config->GetItemCounts(AHB_WHITE_TG);
+    uint32 currentGreenTG = config->GetItemCounts(AHB_GREEN_TG);
+    uint32 currentBlueTG = config->GetItemCounts(AHB_BLUE_TG);
+    uint32 currentPurpleTG = config->GetItemCounts(AHB_PURPLE_TG);
+    uint32 currentOrangeTG = config->GetItemCounts(AHB_ORANGE_TG);
+    uint32 currentYellowTG = config->GetItemCounts(AHB_YELLOW_TG);
 
-    uint32 currentGreyItems     = config->GetItemCounts(AHB_GREY_I);
-    uint32 currentWhiteItems    = config->GetItemCounts(AHB_WHITE_I);
-    uint32 currentGreenItems    = config->GetItemCounts(AHB_GREEN_I);
-    uint32 currentBlueItems     = config->GetItemCounts(AHB_BLUE_I);
-    uint32 currentPurpleItems   = config->GetItemCounts(AHB_PURPLE_I);
-    uint32 currentOrangeItems   = config->GetItemCounts(AHB_ORANGE_I);
-    uint32 currentYellowItems   = config->GetItemCounts(AHB_YELLOW_I);
+    uint32 currentGreyItems = config->GetItemCounts(AHB_GREY_I);
+    uint32 currentWhiteItems = config->GetItemCounts(AHB_WHITE_I);
+    uint32 currentGreenItems = config->GetItemCounts(AHB_GREEN_I);
+    uint32 currentBlueItems = config->GetItemCounts(AHB_BLUE_I);
+    uint32 currentPurpleItems = config->GetItemCounts(AHB_PURPLE_I);
+    uint32 currentOrangeItems = config->GetItemCounts(AHB_ORANGE_I);
+    uint32 currentYellowItems = config->GetItemCounts(AHB_YELLOW_I);
 
     //
     // Loop variables
     //
 
-    uint32 nbSold    = 0; // Tracing counter
-    uint32 binEmpty  = 0; // Tracing counter
-    uint32 noNeed    = 0; // Tracing counter
-    uint32 tooMany   = 0; // Tracing counter
-    uint32 loopBrk   = 0; // Tracing counter
-    uint32 err       = 0; // Tracing counter
+    uint32 nbSold = 0; // Tracing counter
+    uint32 binEmpty = 0; // Tracing counter
+    uint32 noNeed = 0; // Tracing counter
+    uint32 tooMany = 0; // Tracing counter
+    uint32 loopBrk = 0; // Tracing counter
+    uint32 err = 0; // Tracing counter
 
     for (uint32 cnt = 1; cnt <= nbItemsToSellThisCycle; cnt++)
     {
@@ -614,12 +611,12 @@ void AuctionHouseBot::Sell(Player* AHBplayer, AHBConfig* config)
             if (itemID == 0)
             {
                 binEmpty++;
-            
+
                 if (config->DebugOutSeller)
                 {
                     LOG_ERROR("module", "AHBot [{}]: No item could be selected from the bins", _id);
                 }
-            
+
                 break;
             }
         }
@@ -716,8 +713,8 @@ void AuctionHouseBot::Sell(Player* AHBplayer, AHBConfig* config)
         buyoutPrice = buyoutPrice * urand(config->GetMinPrice(prototype->Quality), config->GetMaxPrice(prototype->Quality));
         buyoutPrice = buyoutPrice / 100;
 
-        bidPrice    = buyoutPrice * urand(config->GetMinBidPrice(prototype->Quality), config->GetMaxBidPrice(prototype->Quality));
-        bidPrice    = bidPrice / 100;
+        bidPrice = buyoutPrice * urand(config->GetMinBidPrice(prototype->Quality), config->GetMaxBidPrice(prototype->Quality));
+        bidPrice = bidPrice / 100;
 
         // 
         // Determine the stack size
@@ -756,18 +753,18 @@ void AuctionHouseBot::Sell(Player* AHBplayer, AHBConfig* config)
 
         auto trans = CharacterDatabase.BeginTransaction();
 
-        AuctionEntry* auctionEntry      = new AuctionEntry();
-        auctionEntry->Id                = sObjectMgr->GenerateAuctionID();
-        auctionEntry->houseId           = AuctionHouseId(config->GetAHID());
-        auctionEntry->item_guid         = item->GetGUID();
-        auctionEntry->item_template     = item->GetEntry();
-        auctionEntry->itemCount         = item->GetCount();
-        auctionEntry->owner             = AHBplayer->GetGUID();
-        auctionEntry->startbid          = bidPrice * stackCount;
-        auctionEntry->buyout            = buyoutPrice * stackCount;
-        auctionEntry->bid               = 0;
-        auctionEntry->deposit           = deposit;
-        auctionEntry->expire_time       = (time_t)elapsingTime + time(NULL);
+        AuctionEntry* auctionEntry = new AuctionEntry();
+        auctionEntry->Id = sObjectMgr->GenerateAuctionID();
+        auctionEntry->houseId = AuctionHouseId(config->GetAHID());
+        auctionEntry->item_guid = item->GetGUID();
+        auctionEntry->item_template = item->GetEntry();
+        auctionEntry->itemCount = item->GetCount();
+        auctionEntry->owner = AHBplayer->GetGUID();
+        auctionEntry->startbid = bidPrice * stackCount;
+        auctionEntry->buyout = buyoutPrice * stackCount;
+        auctionEntry->bid = 0;
+        auctionEntry->deposit = deposit;
+        auctionEntry->expire_time = (time_t)elapsingTime + time(NULL);
         auctionEntry->auctionHouseEntry = ahEntry;
 
         item->SaveToDB(trans);
@@ -881,11 +878,6 @@ void AuctionHouseBot::Update()
     // Preprare for operation
     std::string accountName = "AuctionHouseBot" + std::to_string(_account);
 
-<<<<<<< Updated upstream
-    WorldSession _session(_account, std::move(accountName), nullptr, SEC_PLAYER, sWorld->getIntConfig(CONFIG_EXPANSION), 0, LOCALE_enUS, 0, false, false, 0);
-
-    Player _AHBplayer(&_session);
-=======
     // null socket for offline/bot session
     std::shared_ptr<WorldSocket> sock;
 
@@ -916,7 +908,6 @@ void AuctionHouseBot::Update()
     );
 
     Player _AHBplayer(&_ahbot_session);
->>>>>>> Stashed changes
     _AHBplayer.Initialize(_id);
 
     ObjectAccessor::AddObject(&_AHBplayer);
@@ -949,7 +940,7 @@ void AuctionHouseBot::Update()
                     LOG_INFO("module", "AHBot [{}]: Begin Buy for Alliance...", _id);
                 }
 
-                Buy(&_AHBplayer, _allianceConfig, &_session);
+                Buy(&_AHBplayer, _allianceConfig, &_ahbot_session);
                 _lastrun_a_sec = _newrun;
             }
         }
@@ -972,7 +963,7 @@ void AuctionHouseBot::Update()
                 {
                     LOG_INFO("module", "AHBot [{}]: Begin Buy for Horde...", _id);
                 }
-                Buy(&_AHBplayer, _hordeConfig, &_session);
+                Buy(&_AHBplayer, _hordeConfig, &_ahbot_session);
                 _lastrun_h_sec = _newrun;
             }
         }
@@ -997,7 +988,7 @@ void AuctionHouseBot::Update()
             {
                 LOG_INFO("module", "AHBot [{}]: Begin Buy for Neutral...", _id);
             }
-            Buy(&_AHBplayer, _neutralConfig, &_session);
+            Buy(&_AHBplayer, _neutralConfig, &_ahbot_session);
             _lastrun_n_sec = _newrun;
         }
     }
@@ -1015,7 +1006,7 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     // Retrieve the auction house configuration
     //
 
-    AHBConfig *config = NULL;
+    AHBConfig* config = NULL;
 
     switch (ahMapID)
     {
@@ -1077,14 +1068,14 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
         if (state == 0)
         {
             _allianceConfig->AHBBuyer = false;
-            _hordeConfig->AHBBuyer    = false;
-            _neutralConfig->AHBBuyer  = false;
+            _hordeConfig->AHBBuyer = false;
+            _neutralConfig->AHBBuyer = false;
         }
         else
         {
             _allianceConfig->AHBBuyer = true;
-            _hordeConfig->AHBBuyer    = true;
-            _neutralConfig->AHBBuyer  = true;
+            _hordeConfig->AHBBuyer = true;
+            _neutralConfig->AHBBuyer = true;
         }
 
         break;
@@ -1097,14 +1088,14 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
         if (state == 0)
         {
             _allianceConfig->AHBSeller = false;
-            _hordeConfig->AHBSeller    = false;
-            _neutralConfig->AHBSeller  = false;
+            _hordeConfig->AHBSeller = false;
+            _neutralConfig->AHBSeller = false;
         }
         else
         {
             _allianceConfig->AHBSeller = true;
-            _hordeConfig->AHBSeller    = true;
-            _neutralConfig->AHBSeller  = true;
+            _hordeConfig->AHBSeller = true;
+            _neutralConfig->AHBSeller = true;
         }
 
         break;
@@ -1117,14 +1108,14 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
         if (state == 0)
         {
             _allianceConfig->SellAtMarketPrice = false;
-            _hordeConfig->SellAtMarketPrice    = false;
-            _neutralConfig->SellAtMarketPrice  = false;
+            _hordeConfig->SellAtMarketPrice = false;
+            _neutralConfig->SellAtMarketPrice = false;
         }
         else
         {
             _allianceConfig->SellAtMarketPrice = true;
-            _hordeConfig->SellAtMarketPrice    = true;
-            _neutralConfig->SellAtMarketPrice  = true;
+            _hordeConfig->SellAtMarketPrice = true;
+            _neutralConfig->SellAtMarketPrice = true;
         }
 
         break;
@@ -1147,8 +1138,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
                 // Expired NOW.
                 itr->second->expire_time = GameTime::GetGameTime().count();
 
-                uint32 id                = itr->second->Id;
-                uint32 expire_time       = itr->second->expire_time;
+                uint32 id = itr->second->Id;
+                uint32 expire_time = itr->second->expire_time;
 
                 CharacterDatabase.Execute("UPDATE auctionhouse SET time = '{}' WHERE id = '{}'", expire_time, id);
             }
@@ -1160,8 +1151,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::minitems:
     {
-        char * param1   = strtok(args, " ");
-        uint32 minItems = (uint32) strtoul(param1, NULL, 0);
+        char* param1 = strtok(args, " ");
+        uint32 minItems = (uint32)strtoul(param1, NULL, 0);
 
         WorldDatabase.Execute("UPDATE mod_auctionhousebot SET minitems = '{}' WHERE auctionhouse = '{}'", minItems, ahMapID);
 
@@ -1171,8 +1162,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::maxitems:
     {
-        char * param1   = strtok(args, " ");
-        uint32 maxItems = (uint32) strtoul(param1, NULL, 0);
+        char* param1 = strtok(args, " ");
+        uint32 maxItems = (uint32)strtoul(param1, NULL, 0);
 
         WorldDatabase.Execute("UPDATE mod_auctionhousebot SET maxitems = '{}' WHERE auctionhouse = '{}'", maxItems, ahMapID);
 
@@ -1182,35 +1173,35 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::percentages:
     {
-        char * param1   = strtok(args, " ");
-        char * param2   = strtok(NULL, " ");
-        char * param3   = strtok(NULL, " ");
-        char * param4   = strtok(NULL, " ");
-        char * param5   = strtok(NULL, " ");
-        char * param6   = strtok(NULL, " ");
-        char * param7   = strtok(NULL, " ");
-        char * param8   = strtok(NULL, " ");
-        char * param9   = strtok(NULL, " ");
-        char * param10  = strtok(NULL, " ");
-        char * param11  = strtok(NULL, " ");
-        char * param12  = strtok(NULL, " ");
-        char * param13  = strtok(NULL, " ");
-        char * param14  = strtok(NULL, " ");
+        char* param1 = strtok(args, " ");
+        char* param2 = strtok(NULL, " ");
+        char* param3 = strtok(NULL, " ");
+        char* param4 = strtok(NULL, " ");
+        char* param5 = strtok(NULL, " ");
+        char* param6 = strtok(NULL, " ");
+        char* param7 = strtok(NULL, " ");
+        char* param8 = strtok(NULL, " ");
+        char* param9 = strtok(NULL, " ");
+        char* param10 = strtok(NULL, " ");
+        char* param11 = strtok(NULL, " ");
+        char* param12 = strtok(NULL, " ");
+        char* param13 = strtok(NULL, " ");
+        char* param14 = strtok(NULL, " ");
 
-        uint32 greytg   = (uint32) strtoul(param1, NULL, 0);
-        uint32 whitetg  = (uint32) strtoul(param2, NULL, 0);
-        uint32 greentg  = (uint32) strtoul(param3, NULL, 0);
-        uint32 bluetg   = (uint32) strtoul(param4, NULL, 0);
-        uint32 purpletg = (uint32) strtoul(param5, NULL, 0);
-        uint32 orangetg = (uint32) strtoul(param6, NULL, 0);
-        uint32 yellowtg = (uint32) strtoul(param7, NULL, 0);
-        uint32 greyi    = (uint32) strtoul(param8, NULL, 0);
-        uint32 whitei   = (uint32) strtoul(param9, NULL, 0);
-        uint32 greeni   = (uint32) strtoul(param10, NULL, 0);
-        uint32 bluei    = (uint32) strtoul(param11, NULL, 0);
-        uint32 purplei  = (uint32) strtoul(param12, NULL, 0);
-        uint32 orangei  = (uint32) strtoul(param13, NULL, 0);
-        uint32 yellowi  = (uint32) strtoul(param14, NULL, 0);
+        uint32 greytg = (uint32)strtoul(param1, NULL, 0);
+        uint32 whitetg = (uint32)strtoul(param2, NULL, 0);
+        uint32 greentg = (uint32)strtoul(param3, NULL, 0);
+        uint32 bluetg = (uint32)strtoul(param4, NULL, 0);
+        uint32 purpletg = (uint32)strtoul(param5, NULL, 0);
+        uint32 orangetg = (uint32)strtoul(param6, NULL, 0);
+        uint32 yellowtg = (uint32)strtoul(param7, NULL, 0);
+        uint32 greyi = (uint32)strtoul(param8, NULL, 0);
+        uint32 whitei = (uint32)strtoul(param9, NULL, 0);
+        uint32 greeni = (uint32)strtoul(param10, NULL, 0);
+        uint32 bluei = (uint32)strtoul(param11, NULL, 0);
+        uint32 purplei = (uint32)strtoul(param12, NULL, 0);
+        uint32 orangei = (uint32)strtoul(param13, NULL, 0);
+        uint32 yellowi = (uint32)strtoul(param14, NULL, 0);
 
         //
         // Setup the percentage in the configuration first, so validity test can be performed
@@ -1224,20 +1215,20 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
 
         auto trans = WorldDatabase.BeginTransaction();
 
-        trans->Append("UPDATE mod_auctionhousebot SET percentgreytradegoods   = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_GREY_TG)  , ahMapID);
-        trans->Append("UPDATE mod_auctionhousebot SET percentwhitetradegoods  = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_WHITE_TG) , ahMapID);
-        trans->Append("UPDATE mod_auctionhousebot SET percentgreentradegoods  = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_GREEN_TG) , ahMapID);
-        trans->Append("UPDATE mod_auctionhousebot SET percentbluetradegoods   = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_BLUE_TG)  , ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentgreytradegoods   = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_GREY_TG), ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentwhitetradegoods  = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_WHITE_TG), ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentgreentradegoods  = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_GREEN_TG), ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentbluetradegoods   = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_BLUE_TG), ahMapID);
         trans->Append("UPDATE mod_auctionhousebot SET percentpurpletradegoods = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_PURPLE_TG), ahMapID);
         trans->Append("UPDATE mod_auctionhousebot SET percentorangetradegoods = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_ORANGE_TG), ahMapID);
         trans->Append("UPDATE mod_auctionhousebot SET percentyellowtradegoods = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_YELLOW_TG), ahMapID);
-        trans->Append("UPDATE mod_auctionhousebot SET percentgreyitems        = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_GREY_I)   , ahMapID);
-        trans->Append("UPDATE mod_auctionhousebot SET percentwhiteitems       = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_WHITE_I)  , ahMapID);
-        trans->Append("UPDATE mod_auctionhousebot SET percentgreenitems       = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_GREEN_I)  , ahMapID);
-        trans->Append("UPDATE mod_auctionhousebot SET percentblueitems        = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_BLUE_I)   , ahMapID);
-        trans->Append("UPDATE mod_auctionhousebot SET percentpurpleitems      = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_PURPLE_I) , ahMapID);
-        trans->Append("UPDATE mod_auctionhousebot SET percentorangeitems      = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_ORANGE_I) , ahMapID);
-        trans->Append("UPDATE mod_auctionhousebot SET percentyellowitems      = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_YELLOW_I) , ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentgreyitems        = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_GREY_I), ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentwhiteitems       = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_WHITE_I), ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentgreenitems       = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_GREEN_I), ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentblueitems        = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_BLUE_I), ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentpurpleitems      = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_PURPLE_I), ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentorangeitems      = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_ORANGE_I), ahMapID);
+        trans->Append("UPDATE mod_auctionhousebot SET percentyellowitems      = '{}' WHERE auctionhouse = '{}'", config->GetPercentages(AHB_YELLOW_I), ahMapID);
 
         WorldDatabase.CommitTransaction(trans);
 
@@ -1245,8 +1236,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::minprice:
     {
-        char * param1   = strtok(args, " ");
-        uint32 minPrice = (uint32) strtoul(param1, NULL, 0);
+        char* param1 = strtok(args, " ");
+        uint32 minPrice = (uint32)strtoul(param1, NULL, 0);
 
         WorldDatabase.Execute("UPDATE mod_auctionhousebot SET minprice{} = '{}' WHERE auctionhouse = '{}'", color, minPrice, ahMapID);
 
@@ -1256,8 +1247,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::maxprice:
     {
-        char * param1   = strtok(args, " ");
-        uint32 maxPrice = (uint32) strtoul(param1, NULL, 0);
+        char* param1 = strtok(args, " ");
+        uint32 maxPrice = (uint32)strtoul(param1, NULL, 0);
 
         WorldDatabase.Execute("UPDATE mod_auctionhousebot SET maxprice{} = '{}' WHERE auctionhouse = '{}'", color, maxPrice, ahMapID);
 
@@ -1267,8 +1258,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::minbidprice:
     {
-        char * param1      = strtok(args, " ");
-        uint32 minBidPrice = (uint32) strtoul(param1, NULL, 0);
+        char* param1 = strtok(args, " ");
+        uint32 minBidPrice = (uint32)strtoul(param1, NULL, 0);
 
         WorldDatabase.Execute("UPDATE mod_auctionhousebot SET minbidprice{} = '{}' WHERE auctionhouse = '{}'", color, minBidPrice, ahMapID);
 
@@ -1278,8 +1269,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::maxbidprice:
     {
-        char * param1      = strtok(args, " ");
-        uint32 maxBidPrice = (uint32) strtoul(param1, NULL, 0);
+        char* param1 = strtok(args, " ");
+        uint32 maxBidPrice = (uint32)strtoul(param1, NULL, 0);
 
         WorldDatabase.Execute("UPDATE mod_auctionhousebot SET maxbidprice{} = '{}' WHERE auctionhouse = '{}'", color, maxBidPrice, ahMapID);
 
@@ -1289,8 +1280,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::maxstack:
     {
-        char * param1   = strtok(args, " ");
-        uint32 maxStack = (uint32) strtoul(param1, NULL, 0);
+        char* param1 = strtok(args, " ");
+        uint32 maxStack = (uint32)strtoul(param1, NULL, 0);
 
         WorldDatabase.Execute("UPDATE mod_auctionhousebot SET maxstack{} = '{}' WHERE auctionhouse = '{}'", color, maxStack, ahMapID);
 
@@ -1300,8 +1291,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::buyerprice:
     {
-        char * param1     = strtok(args, " ");
-        uint32 buyerPrice = (uint32) strtoul(param1, NULL, 0);
+        char* param1 = strtok(args, " ");
+        uint32 buyerPrice = (uint32)strtoul(param1, NULL, 0);
 
         WorldDatabase.Execute("UPDATE mod_auctionhousebot SET buyerprice{} = '{}' WHERE auctionhouse = '{}'", color, buyerPrice, ahMapID);
 
@@ -1311,8 +1302,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::bidinterval:
     {
-        char * param1      = strtok(args, " ");
-        uint32 bidInterval = (uint32) strtoul(param1, NULL, 0);
+        char* param1 = strtok(args, " ");
+        uint32 bidInterval = (uint32)strtoul(param1, NULL, 0);
 
         WorldDatabase.Execute("UPDATE mod_auctionhousebot SET buyerbiddinginterval = '{}' WHERE auctionhouse = '{}'", bidInterval, ahMapID);
 
@@ -1322,8 +1313,8 @@ void AuctionHouseBot::Commands(AHBotCommand command, uint32 ahMapID, uint32 col,
     }
     case AHBotCommand::bidsperinterval:
     {
-        char * param1          = strtok(args, " ");
-        uint32 bidsPerInterval = (uint32) strtoul(param1, NULL, 0);
+        char* param1 = strtok(args, " ");
+        uint32 bidsPerInterval = (uint32)strtoul(param1, NULL, 0);
 
         WorldDatabase.Execute("UPDATE mod_auctionhousebot SET buyerbidsperinterval = '{}' WHERE auctionhouse = '{}'", bidsPerInterval, ahMapID);
 
@@ -1347,8 +1338,8 @@ void AuctionHouseBot::Initialize(AHBConfig* allianceConfig, AHBConfig* hordeConf
     // 
 
     _allianceConfig = allianceConfig;
-    _hordeConfig    = hordeConfig;
-    _neutralConfig  = neutralConfig;
+    _hordeConfig = hordeConfig;
+    _neutralConfig = neutralConfig;
 
     //
     // Done
